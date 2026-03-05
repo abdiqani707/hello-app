@@ -1,37 +1,57 @@
 import streamlit as st
 
-# 1. Ciwaanka iyo Qoraalka (Headings and Text)
-st.title('Interface-ka Streamlit')
-st.header('Kusoo dhawaaw boggaaga cusub')
-st.write('Kani waa tusaale ku saabsan sida loo isticmaalo buttons iyo input fields.')
+# 1. Ciwaanka Bogga (Page Config)
+st.set_page_config(page_title="App-kayga Streamlit", page_icon="🚀")
 
-# Khad kala qaybiya
+# 2. Qaybta Sare (Header Section)
+st.title('🚀 Streamlit App-kaaga Koowaad')
+st.markdown("""
+Kani waa interface dhamaystiran oo leh:
+* **Input Fields** (Qoraal iyo Lambar)
+* **Buttons** (Badhamno Action leh)
+* **File Uploader** (Meel sawir laga soo geliyo)
+""")
+
 st.divider()
 
-# 2. Meelaha xogta laga geliyo (Input Fields)
-st.subheader('Gali xogtaada hoos:')
+# 3. Meelaha xogta laga geliyo (Input Section)
+st.subheader('📝 Fadlan buuxi macluumaadkaaga')
 
-magaca = st.text_input('Fadlan qor magacaaga:')
-da'da = st.number_input('Immisa ayaad jirtaa?', min_value=1, max_value=100, value=18)
+# Halkan waxaan u isticmaalay 'dada' halkii aan ka isticmaali lahaa 'da'da' si khaladku u baxo
+magaca = st.text_input('Magacaaga oo buuxa:', placeholder="Tusaale: Axmed Cali")
+dada = st.number_input('Immisa ayaad jirtaa?', min_value=1, max_value=100, value=20)
+email = st.text_input('Email-kaaga:', placeholder="example@mail.com")
 
-# 3. Badhamada (Buttons)
-if st.button('Guji halkan si aad u gudbiso'):
-    if magaca:
-        st.success(f"Mahadsanid {magaca}! Xogtaada waa la helay.")
-        st.info(f"Da'daada waa: {da'da}")
-    else:
-        st.warning("Fadlan magaca horta qor.")
-
-# 4. Badhamada kale (Additional Buttons)
+# 4. Badhamada (Buttons)
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button('Haa'):
-        st.write('Waad ku mahadsantahay dookhaaga Haa!')
+    if st.button('✅ Gudbi Xogta'):
+        if magaca and email:
+            st.success(f"Waad ku mahadsantahay, {magaca}!")
+            st.write(f"Xogtaada waa la keydiyay. Da'daadu waa {dada}.")
+        else:
+            st.error("Fadlan buuxi dhammaan meelaha bannaan.")
 
 with col2:
-    if st.button('Maya'):
-        st.write('Dhib maleh, Maya ayaad dooratay.')
+    if st.button('🗑️ Masax Form-ka'):
+        st.info("Fadlan refresh dheh page-ka si aad u masaxdo.")
 
-# 5. Meel xog weyn laga qoro (Text Area)
-faallo = st.text_area('Halkan ku qor faalladaada:')
+st.divider()
+
+# 5. Meel sawirka ama file-ka laga soo geliyo (File Uploader)
+st.subheader('🖼️ Upload garee Sawir')
+uploaded_file = st.file_uploader("Dooro sawir aad rabto inaan soo bandhigno", type=["jpg", "png", "jpeg"])
+
+if uploaded_file is not None:
+    st.image(uploaded_file, caption='Sawirka aad soo gelisay', use_container_width=True)
+
+# 6. Sidebar (Dhinaca bidix)
+st.sidebar.title("Settings")
+st.sidebar.write("Halkan waa meel aad ku dari karto menu-yo dheeri ah.")
+option = st.sidebar.selectbox(
+    'Sidee ayaad u aragtaa app-kan?',
+    ('Aad u fiican', 'Dhexdhexaad', 'Ma fiicna')
+)
+
+st.sidebar.write(f"Waad ku mahadsantahay ra'yigaaga: **{option}**")
