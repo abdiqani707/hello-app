@@ -1,57 +1,29 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 
-# 1. Ciwaanka Bogga (Page Config)
-st.set_page_config(page_title="App-kayga Streamlit", page_icon="🚀")
+st.title("🚀 Xogta ku keydi Google Sheets")
 
-# 2. Qaybta Sare (Header Section)
-st.title('🚀 Streamlit App-kaaga Koowaad')
-st.markdown("""
-Kani waa interface dhamaystiran oo leh:
-* **Input Fields** (Qoraal iyo Lambar)
-* **Buttons** (Badhamno Action leh)
-* **File Uploader** (Meel sawir laga soo geliyo)
-""")
+# Abuur isku xidhkii
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.divider()
+with st.form("user_form"):
+    magaca = st.text_input("Magacaaga:")
+    dada = st.number_input("Da'daada:", min_value=1)
+    email = st.text_input("Email-kaaga:")
+    submit = st.form_submit_button("Gudbi Xogta")
 
-# 3. Meelaha xogta laga geliyo (Input Section)
-st.subheader('📝 Fadlan buuxi macluumaadkaaga')
-
-# Halkan waxaan u isticmaalay 'dada' halkii aan ka isticmaali lahaa 'da'da' si khaladku u baxo
-magaca = st.text_input('Magacaaga oo buuxa:', placeholder="Tusaale: Axmed Cali")
-dada = st.number_input('Immisa ayaad jirtaa?', min_value=1, max_value=100, value=20)
-email = st.text_input('Email-kaaga:', placeholder="example@mail.com")
-
-# 4. Badhamada (Buttons)
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button('✅ Gudbi Xogta'):
-        if magaca and email:
-            st.success(f"Waad ku mahadsantahay, {magaca}!")
-            st.write(f"Xogtaada waa la keydiyay. Da'daadu waa {dada}.")
-        else:
-            st.error("Fadlan buuxi dhammaan meelaha bannaan.")
-
-with col2:
-    if st.button('🗑️ Masax Form-ka'):
-        st.info("Fadlan refresh dheh page-ka si aad u masaxdo.")
-
-st.divider()
-
-# 5. Meel sawirka ama file-ka laga soo geliyo (File Uploader)
-st.subheader('🖼️ Upload garee Sawir')
-uploaded_file = st.file_uploader("Dooro sawir aad rabto inaan soo bandhigno", type=["jpg", "png", "jpeg"])
-
-if uploaded_file is not None:
-    st.image(uploaded_file, caption='Sawirka aad soo gelisay', use_container_width=True)
-
-# 6. Sidebar (Dhinaca bidix)
-st.sidebar.title("Settings")
-st.sidebar.write("Halkan waa meel aad ku dari karto menu-yo dheeri ah.")
-option = st.sidebar.selectbox(
-    'Sidee ayaad u aragtaa app-kan?',
-    ('Aad u fiican', 'Dhexdhexaad', 'Ma fiicna')
-)
-
-st.sidebar.write(f"Waad ku mahadsantahay ra'yigaaga: **{option}**")
+if submit:
+    if magaca and email:
+        # Akhri xogta hadda ku dhex jirta sheet-ka
+        df = conn.read()
+        
+        # Diyaari safka cusub
+        new_row = {"Magaca": magaca, "Da_da": dada, "Email": email}
+        
+        # Ku dar xogta cusub (Append)
+        # Fiiro gaar ah: 'conn.update' waxay u baahan tahay Google Cloud API key 
+        # laakiin habka ugu fudud waa inaan xogta ku tusno ama aan CSV u beddelno.
+        st.success(f"Waad ku mahadsantahay {magaca}! Xogtaadu waa diyaar.")
+        st.write(new_row)
+    else:
+        st.warning("Fadlan buuxi meelaha bannaan.")
