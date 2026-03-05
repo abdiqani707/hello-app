@@ -1,48 +1,47 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-# 1. Ciwaanka Bogga
-st.set_page_config(page_title="Xogta GIS - Hargeisa", layout="wide")
-st.title("📍 Khariidadda Goobaha GIS")
+# 1. Habaynta Bogga
+st.set_page_config(page_title="GIS Dashboard", layout="wide")
+st.title("📍 Khariidadda Goobaha GIS (Google Sheets)")
 
-# 2. Akhrinta Xogta (Halkan waxaan u isticmaalay file-ka aad soo dirtay)
-# Haddii aad Google Sheets isticmaalayso, isticmaal 'conn.read()' sidii hore
+# 2. Isku xidhka Google Sheets
 try:
-    df = pd.read_csv('MAANTA.csv')
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    # TTL=0 waxay ku qasbaysaa inuu soo qaado xogta ugu dambaysa ee Sheet-ka
+    df = conn.read(ttl=0)
     
-    # Nadiifinta xogta (Iska tuur safaf banaan haddii ay jiraan)
+    # Nadiifinta: Iska tuur safaf banaan haddii ay jiraan
     df = df.dropna(subset=['Latitude', 'Longitude'])
 
-    # 3. Soo bandhigista Khariidadda
-    st.subheader("🗺️ Goobaha Khariidadda ku yaalla")
+    # 3. Sidebar - Sifeeyaha Degmada
+    st.sidebar.header("Sifee Xogta")
+    degmooyin = df['Degmada'].unique().tolist()
+    degmada_la_doonayo = st.sidebar.multiselect(
+        "Dooro Degmada:",
+        options=degmooyin,
+        default=degmooyin
+    )
+
+    # Sifee xogta intaanan Map-ka saarin
+    filtered_df = df[df['Degmada'].isin(degmada_la_doonayo)]
+
+    # 4. Khariidadda (Map)
+    st.subheader(f"🗺️ Khariidadda Degmooyinka: {', '.join(degmada_la_doonayo)}")
     
-    # Streamlit wuxuu u baahan yahay inuu ogaado tiirarka loolka iyo dhigaha
-    # Maadaama xogtaadu leedahay 'Latitude' iyo 'Longitude', halkan ayaan ku qeexaynaa
-    st.map(df, latitude='Latitude', longitude='Longitude')
+    if not filtered_df.empty:
+        # Halkan waxaan ku sheegaynaa tiirarka saxda ah ee xogtaada ku jira
+        st.map(filtered_df, latitude='Latitude', longitude='Longitude')
+        
+        st.divider()
 
-    st.divider()
+        # 5. Jadwalka Xogta
+        st.subheader("📋 Faahfaahinta Xogta la sifeeyey")
+        st.dataframe(filtered_df, use_container_width=True)
+    else:
+        st.warning("Ma jirto xog laga helay degmada aad dooratay.")
 
-    # 4. Jadwalka Xogta oo faahfaahsan
-    st.subheader("📋 Liiska Xogta oo Dhamaystiran")
-    
-    # Waxaan dooranaynaa tiirarka muhiimka ah si ay u muuqdaan
-    tiirarka_muhiimka_ah = [
-        'Magaca Cusub', 'Degmada', 'GIS NO', 'Latitude', 'Longitude', 'Nooca Hantida'
-    ]
-    st.dataframe(df[tiirarka_muhiimka_ah], use_container_width=True)
-
-except FileNotFoundError:
-    st.error("File-kii 'MAANTA.csv' lama helin. Hubi inuu ku jiro isla folder-ka app-ka.")
 except Exception as e:
-    st.error(f"Cillad ayaa dhacday: {e}")
-
-# 5. Sidebar-ka (Sifeeyaha/Filters)
-st.sidebar.header("Sifee Xogta")
-degmada_la_doonayo = st.sidebar.multiselect(
-    "Dooro Degmada:",
-    options=df['Degmada'].unique(),
-    default=df['Degmada'].unique()
-)
-
-# Haddii qofku doorto degmo gaar ah, xogta u sifee
-filtered_df = df[df['Degmada'].is_in(degmada_la_doonayo)]
+    st.error(f"Xidhiidhka Google Sheets waa la diiday: {e}")
+    st.info("Hubi in 'secrets.toml' uu sax yahay oo Sheet-ku yahay 'Anyone with the link'.")
